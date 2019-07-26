@@ -18,6 +18,7 @@ namespace dotnet_figlet.console
             _resetDefaultColors();
 
             bool showHelp = false;
+            bool showPreview = false;
             string font = "standard";
             string color = "color";
 
@@ -25,17 +26,28 @@ namespace dotnet_figlet.console
             {
                 { "h|help|?", v => { showHelp = true; } },
                 { "f|font=", v => { font = v; } },
-                { "c|color=", v => { color = v; } }
+                { "c|color=", v => { color = v; } },
+                { "p|preview", v => { showPreview = true; } }
             };
 
             var parsed = options.Parse(args);
+
+            if (showHelp)
+            {
+                _showHelp();
+            }
+
+            if (showPreview)
+            {
+                _showPreview();
+            }
 
             Color renderColor = Color.FromName(color);
             if (!renderColor.IsKnownColor)
                 renderColor = Console.ForegroundColor;
 
-            Console.WriteLine($"[Loading font]: dotnet_figlet.Console.Fonts.{font}.flf");
-            Console.WriteLine($"[Color]: {renderColor.Name}");
+            //Console.WriteLine($"[Loading font]: dotnet_figlet.Console.Fonts.{font}.flf");
+            //Console.WriteLine($"[Color]: {renderColor.Name}");
 
             var assembly = typeof(Program).GetTypeInfo().Assembly;
             Stream resource = assembly.GetManifestResourceStream($"dotnet_figlet.Console.Fonts.{font}.flf");
@@ -43,7 +55,7 @@ namespace dotnet_figlet.console
             FigletFont figletFont = FigletFont.Load(resource);
             Figlet figlet = new Figlet(figletFont);
 
-            Console.WriteLine($"[Figlet font]: MaxLength={figletFont.MaxLength}, Height={figletFont.Height}, FullLayout={figletFont.FullLayout}, BaseLine={figletFont.BaseLine}");
+            //Console.WriteLine($"[Figlet font]: MaxLength={figletFont.MaxLength}, Height={figletFont.Height}, FullLayout={figletFont.FullLayout}, BaseLine={figletFont.BaseLine}");
 
             List<string> extraparams;
             try
@@ -62,8 +74,8 @@ namespace dotnet_figlet.console
             if (extraparams.Count > 0)
             {
                 message = String.Join(" ", extraparams.ToArray());
-                Console.WriteLine($"[Input]: {message}");
-                Console.WriteLine($"{Console.WindowWidth} {Console.LargestWindowWidth}");
+                //Console.WriteLine($"[Input]: {message}");
+                //Console.WriteLine($"{Console.WindowWidth} {Console.LargestWindowWidth}");
 
                 int start = 0;
                 int take = extraparams.Count;
@@ -110,15 +122,6 @@ namespace dotnet_figlet.console
                 }
             }
 
-            if (showHelp)
-            {
-                _showHelp();
-            }
-            
-            // TODO: calculate console width and rearrange the string tokens to newlines
-
-            // Console.WriteLine(figlet.ToAscii(message).ToString(), renderColor);
-
             Environment.Exit(0);
         }
 
@@ -130,6 +133,27 @@ namespace dotnet_figlet.console
             Console.WriteLine("\t-h, --help\t\t\tShow this page");
             Console.WriteLine("\t-f, --font <font name>\t\tFiglet font to use for render, 'standard' is the default");
             Console.WriteLine("\t-c, --color <color name>\tColor to use");
+            Console.WriteLine("\t-p, --preview\t\t\tShow a preview of all embedded fonts");
+            Console.WriteLine();
+        }
+
+        private static void _showPreview()
+        {
+            var assembly = typeof(Program).GetTypeInfo().Assembly;
+            string[] resourceNames = assembly.GetManifestResourceNames();
+
+            List<string> fonts = resourceNames.Where(w => w.EndsWith(".flf")).ToList();
+
+            foreach (string font in fonts)
+            {
+                string fontName = font.Replace("dotnet_figlet.Console.Fonts.", "");
+                Stream resource = assembly.GetManifestResourceStream(font);
+                FigletFont figletFont = FigletFont.Load(resource);
+                Figlet figlet = new Figlet(figletFont);
+
+                Console.WriteLine(fontName);
+                Console.WriteLine(figlet.ToAscii("Lorem Ipsum"));
+            }
         }
 
         private static void _resetDefaultColors()
