@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Console = Colorful.Console;
 
@@ -60,8 +61,53 @@ namespace dotnet_figlet.console
 
             if (extraparams.Count > 0)
             {
-                message = string.Join(" ", extraparams.ToArray());
+                message = String.Join(" ", extraparams.ToArray());
                 Console.WriteLine($"[Input]: {message}");
+                Console.WriteLine($"{Console.WindowWidth} {Console.LargestWindowWidth}");
+
+                int start = 0;
+                int take = extraparams.Count;
+
+                bool needsToBeSplitted = true;
+
+                List<string> lines = new List<string>();
+
+                while (needsToBeSplitted)
+                {
+                    if (take <= 0)
+                    {
+                        needsToBeSplitted = false;
+
+                        if (start < extraparams.Count)
+                            lines.Add(String.Join(" ", extraparams.ToArray()));
+                    }
+                    else
+                    {
+                        string[] subSentence = extraparams.Skip(start).Take(take).ToArray();
+
+                        string line = String.Join(" ", subSentence);
+                        bool subsentenceLengthOk = figlet.ToAscii(line).CharacterGeometry.GetLength(1) <= Console.WindowWidth;
+
+                        if (subSentence.Length == 0)
+                            needsToBeSplitted = false;
+                        else if (subsentenceLengthOk)
+                        {
+                            lines.Add(line);
+
+                            start = start + subSentence.Length;
+                            take = extraparams.Count - start;
+                        }
+                        else
+                        {
+                            take--;
+                        }
+                    }
+                }
+
+                foreach (string line in lines)
+                {
+                    Console.WriteLine( figlet.ToAscii(String.Join(" ", line)).ToString(), renderColor );
+                }
             }
 
             if (showHelp)
@@ -71,7 +117,7 @@ namespace dotnet_figlet.console
             
             // TODO: calculate console width and rearrange the string tokens to newlines
 
-            Console.WriteLine(figlet.ToAscii(message).ToString(), renderColor);
+            // Console.WriteLine(figlet.ToAscii(message).ToString(), renderColor);
 
             Environment.Exit(0);
         }

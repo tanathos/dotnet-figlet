@@ -4,6 +4,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>dotnet_figlet.Console</RootNamespace>
+    <PackageId>dotnet-figlet</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>figlet</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
