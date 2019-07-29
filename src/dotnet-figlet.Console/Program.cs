@@ -14,8 +14,8 @@ namespace dotnet_figlet.console
     {
         static void Main(string[] args)
         {
-            // Workaround for Colorful.Console issue https://github.com/tomakita/Colorful.Console/issues/16
-            _resetDefaultColors();
+            // Temp disabled, see below
+            // _resetDefaultColors();
 
             bool showHelp = false;
             bool showPreview = false;
@@ -46,17 +46,22 @@ namespace dotnet_figlet.console
             if (!renderColor.IsKnownColor)
                 renderColor = Console.ForegroundColor;
 
-            //Console.WriteLine($"[Loading font]: dotnet_figlet.Console.Fonts.{font}.flf");
-            //Console.WriteLine($"[Color]: {renderColor.Name}");
+#if DEBUG
 
+            Console.WriteLine($"[Loading font]: dotnet_figlet.Console.Fonts.{font}.flf");
+            Console.WriteLine($"[Color]: {renderColor.Name}");
+#endif
             var assembly = typeof(Program).GetTypeInfo().Assembly;
             Stream resource = assembly.GetManifestResourceStream($"dotnet_figlet.Console.Fonts.{font}.flf");
 
             FigletFont figletFont = FigletFont.Load(resource);
             Figlet figlet = new Figlet(figletFont);
 
-            //Console.WriteLine($"[Figlet font]: MaxLength={figletFont.MaxLength}, Height={figletFont.Height}, FullLayout={figletFont.FullLayout}, BaseLine={figletFont.BaseLine}");
+#if DEBUG
 
+            Console.WriteLine($"[Figlet font]: MaxLength={figletFont.MaxLength}, Height={figletFont.Height}, FullLayout={figletFont.FullLayout}, BaseLine={figletFont.BaseLine}");
+
+#endif
             List<string> extraparams;
             try
             {
@@ -74,8 +79,13 @@ namespace dotnet_figlet.console
             if (extraparams.Count > 0)
             {
                 message = String.Join(" ", extraparams.ToArray());
-                //Console.WriteLine($"[Input]: {message}");
-                //Console.WriteLine($"{Console.WindowWidth} {Console.LargestWindowWidth}");
+
+#if DEBUG
+
+                Console.WriteLine($"[Input]: {message}");
+                Console.WriteLine($"Console.WindowWidth: {Console.WindowWidth} Console.LargestWindowWidth: {Console.LargestWindowWidth}");
+
+#endif
 
                 int start = 0;
                 int take = extraparams.Count;
@@ -116,10 +126,16 @@ namespace dotnet_figlet.console
                     }
                 }
 
+                Console.ForegroundColor = renderColor;
+
                 foreach (string line in lines)
                 {
-                    Console.WriteLine( figlet.ToAscii(String.Join(" ", line)).ToString(), renderColor );
+                    // Temp: by now I'll not use the Colorful.Console for the color itself as in Powershell there's a strange bug involving the background going to purple...
+                    // Console.WriteLine( figlet.ToAscii(String.Join(" ", line)).ToString(), renderColor );
+                    System.Console.WriteLine(figlet.ToAscii(String.Join(" ", line)).ToString());
                 }
+
+                Console.ResetColor();
             }
 
             Environment.Exit(0);
@@ -156,6 +172,9 @@ namespace dotnet_figlet.console
             }
         }
 
+        /// <summary>
+        /// Workaround for Colorful.Console issue https://github.com/tomakita/Colorful.Console/issues/16
+        /// </summary>
         private static void _resetDefaultColors()
         {
             Console.Write("", Color.Navy);

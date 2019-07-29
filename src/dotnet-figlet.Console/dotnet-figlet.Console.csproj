@@ -4,8 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>dotnet_figlet.Console</RootNamespace>
+    
     <PackageId>dotnet-figlet</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <Title>.NET global tool to produce figlet representation of the given text</Title>
+    <Authors>tanathos</Authors>
+    <PackageDescription>Just install and run 'figlet lorem ipsum' to be figlettize the text. Supports around 150 figlet fonts.</PackageDescription>
+    <PackageVersion>0.1.0</PackageVersion>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>figlet</ToolCommandName>
   </PropertyGroup>
