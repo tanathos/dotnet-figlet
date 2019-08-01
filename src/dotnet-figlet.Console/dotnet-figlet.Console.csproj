@@ -6,10 +6,12 @@
     <RootNamespace>dotnet_figlet.Console</RootNamespace>
     
     <PackageId>dotnet-figlet</PackageId>
-    <Title>.NET global tool to produce figlet representation of the given text</Title>
+    <Title>.NET global tool to produce figlet representation of a text</Title>
     <Authors>tanathos</Authors>
-    <PackageDescription>Just install and run 'figlet lorem ipsum' to be figlettize the text. Supports around 150 figlet fonts.</PackageDescription>
-    <PackageVersion>0.1.0</PackageVersion>
+    <PackageDescription>Just install and run 'figlet lorem ipsum' to figlettize the given text. Supports around 150 figlet fonts.</PackageDescription>
+    <PackageVersion>0.2.0</PackageVersion>
+    <PackageTags>figlet;ascii;commandline</PackageTags>
+    <RepositoryUrl>https://github.com/tanathos/dotnet-figlet</RepositoryUrl>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>figlet</ToolCommandName>
   </PropertyGroup>
