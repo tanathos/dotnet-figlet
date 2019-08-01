@@ -21,11 +21,23 @@ namespace dotnet_figlet.console
             bool showPreview = false;
             string font = "standard";
             string color = "color";
+            string fileOutput = null;
+
+            bool wroteToFile = false;
 
             var options = new OptionSet()
             {
                 { "h|help|?", v => { showHelp = true; } },
                 { "f|font=", v => { font = v; } },
+                { "o|output=", filename => {
+                    if (filename == null || (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+                    {
+                        Console.WriteLine("Invalid output file name");
+                        Environment.Exit(0);
+                    }
+
+                    fileOutput = filename;
+                } },
                 { "c|color=", v => { color = v; } },
                 { "p|preview", v => { showPreview = true; } }
             };
@@ -35,11 +47,13 @@ namespace dotnet_figlet.console
             if (showHelp)
             {
                 _showHelp();
+                Environment.Exit(0);
             }
 
             if (showPreview)
             {
                 _showPreview();
+                Environment.Exit(0);
             }
 
             Color renderColor = Color.FromName(color);
@@ -53,6 +67,14 @@ namespace dotnet_figlet.console
 #endif
             var assembly = typeof(Program).GetTypeInfo().Assembly;
             Stream resource = assembly.GetManifestResourceStream($"dotnet_figlet.Console.Fonts.{font}.flf");
+
+            if (resource == null)
+            {
+                Console.WriteLine($"Unknow font: {font}");
+                Console.WriteLine("To see a list of available fonts use figlet -p");
+
+                Environment.Exit(0);
+            }
 
             FigletFont figletFont = FigletFont.Load(resource);
             Figlet figlet = new Figlet(figletFont);
@@ -80,6 +102,12 @@ namespace dotnet_figlet.console
             {
                 message = String.Join(" ", extraparams.ToArray());
 
+                List<string> tokens = new List<string>();
+                foreach (string extraparam in extraparams)
+                {
+                    tokens.AddRange(extraparam.Split(' ').ToList());
+                }
+
 #if DEBUG
 
                 Console.WriteLine($"[Input]: {message}");
@@ -88,7 +116,7 @@ namespace dotnet_figlet.console
 #endif
 
                 int start = 0;
-                int take = extraparams.Count;
+                int take = tokens.Count;
 
                 bool needsToBeSplitted = true;
 
@@ -100,15 +128,15 @@ namespace dotnet_figlet.console
                     {
                         needsToBeSplitted = false;
 
-                        if (start < extraparams.Count)
-                            lines.Add(String.Join(" ", extraparams.ToArray()));
+                        if (start < tokens.Count)
+                            lines.Add(String.Join(" ", tokens.ToArray()));
                     }
                     else
                     {
-                        string[] subSentence = extraparams.Skip(start).Take(take).ToArray();
+                        string[] subSentence = tokens.Skip(start).Take(take).ToArray();
 
                         string line = String.Join(" ", subSentence);
-                        bool subsentenceLengthOk = figlet.ToAscii(line).CharacterGeometry.GetLength(1) <= Console.WindowWidth;
+                        bool subsentenceLengthOk = figlet.ToAscii(line).CharacterGeometry.GetLength(1) <= (Console.WindowWidth - 1);
 
                         if (subSentence.Length == 0)
                             needsToBeSplitted = false;
@@ -117,7 +145,7 @@ namespace dotnet_figlet.console
                             lines.Add(line);
 
                             start = start + subSentence.Length;
-                            take = extraparams.Count - start;
+                            take = tokens.Count - start;
                         }
                         else
                         {
@@ -128,6 +156,28 @@ namespace dotnet_figlet.console
 
                 Console.ForegroundColor = renderColor;
 
+                TextWriter defaultOutput = Console.Out;
+                FileStream stream = null;
+                StreamWriter writer = null;
+
+                if (fileOutput != null)
+                {
+                    try
+                    {
+                        stream = new FileStream(fileOutput, FileMode.OpenOrCreate, FileAccess.Write);
+                        writer = new StreamWriter(stream);
+
+                        wroteToFile = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        Environment.Exit(0);
+                    }
+
+                    Console.SetOut(writer);
+                }
+
                 foreach (string line in lines)
                 {
                     // Temp: by now I'll not use the Colorful.Console for the color itself as in Powershell there's a strange bug involving the background going to purple...
@@ -135,7 +185,15 @@ namespace dotnet_figlet.console
                     System.Console.WriteLine(figlet.ToAscii(String.Join(" ", line)).ToString());
                 }
 
-                Console.ResetColor();
+                if (wroteToFile)
+                {
+                    Console.SetOut(defaultOutput);
+
+                    writer.Close();
+                    stream.Close();
+                }
+
+                // Console.ResetColor();
             }
 
             Environment.Exit(0);
