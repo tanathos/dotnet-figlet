@@ -2,7 +2,6 @@
 using NDesk.Options;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,13 +13,9 @@ namespace dotnet_figlet.console
     {
         static void Main(string[] args)
         {
-            // Temp disabled, see below
-            // _resetDefaultColors();
-
             bool showHelp = false;
             bool showPreview = false;
             string font = "standard";
-            string color = "color";
             string fileOutput = null;
 
             bool wroteToFile = false;
@@ -38,7 +33,6 @@ namespace dotnet_figlet.console
 
                     fileOutput = filename;
                 } },
-                { "c|color=", v => { color = v; } },
                 { "p|preview", v => { showPreview = true; } }
             };
 
@@ -56,15 +50,11 @@ namespace dotnet_figlet.console
                 Environment.Exit(0);
             }
 
-            Color renderColor = Color.FromName(color);
-            if (!renderColor.IsKnownColor)
-                renderColor = Console.ForegroundColor;
-
 #if DEBUG
 
             Console.WriteLine($"[Loading font]: dotnet_figlet.Console.Fonts.{font}.flf");
-            Console.WriteLine($"[Color]: {renderColor.Name}");
 #endif
+
             var assembly = typeof(Program).GetTypeInfo().Assembly;
             Stream resource = assembly.GetManifestResourceStream($"dotnet_figlet.Console.Fonts.{font}.flf");
 
@@ -154,8 +144,6 @@ namespace dotnet_figlet.console
                     }
                 }
 
-                Console.ForegroundColor = renderColor;
-
                 TextWriter defaultOutput = Console.Out;
                 FileStream stream = null;
                 StreamWriter writer = null;
@@ -180,9 +168,7 @@ namespace dotnet_figlet.console
 
                 foreach (string line in lines)
                 {
-                    // Temp: by now I'll not use the Colorful.Console for the color itself as in Powershell there's a strange bug involving the background going to purple...
-                    // Console.WriteLine( figlet.ToAscii(String.Join(" ", line)).ToString(), renderColor );
-                    System.Console.WriteLine(figlet.ToAscii(String.Join(" ", line)).ToString());
+                    Console.WriteLine(figlet.ToAscii(String.Join(" ", line)).ToString());
                 }
 
                 if (wroteToFile)
@@ -192,8 +178,6 @@ namespace dotnet_figlet.console
                     writer.Close();
                     stream.Close();
                 }
-
-                // Console.ResetColor();
             }
 
             Environment.Exit(0);
@@ -206,7 +190,6 @@ namespace dotnet_figlet.console
             Console.WriteLine("Options:");
             Console.WriteLine("\t-h, --help\t\t\tShow this page");
             Console.WriteLine("\t-f, --font <font name>\t\tFiglet font to use for render, 'standard' is the default");
-            Console.WriteLine("\t-c, --color <color name>\tColor to use");
             Console.WriteLine("\t-p, --preview\t\t\tShow a preview of all embedded fonts");
             Console.WriteLine();
         }
@@ -228,27 +211,6 @@ namespace dotnet_figlet.console
                 Console.WriteLine(fontName);
                 Console.WriteLine(figlet.ToAscii("Lorem Ipsum"));
             }
-        }
-
-        /// <summary>
-        /// Workaround for Colorful.Console issue https://github.com/tomakita/Colorful.Console/issues/16
-        /// </summary>
-        private static void _resetDefaultColors()
-        {
-            Console.Write("", Color.Navy);
-            Console.Write("", Color.Green);
-            Console.Write("", Color.Teal);
-            Console.Write("", Color.Maroon);
-            Console.Write("", Color.Purple);
-            Console.Write("", Color.Olive);
-            Console.Write("", Color.Silver);
-            Console.Write("", Color.Gray);
-            Console.Write("", Color.Blue);
-            Console.Write("", Color.Lime);
-            Console.Write("", Color.Cyan);
-            Console.Write("", Color.Red);
-            Console.Write("", Color.Fuchsia);
-            Console.Write("", Color.Yellow);
         }
     }
 }
