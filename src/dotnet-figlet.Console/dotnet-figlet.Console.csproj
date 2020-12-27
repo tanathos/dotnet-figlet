@@ -11,6 +11,7 @@
     <PackageDescription>Just install and run 'figlet lorem ipsum' to figlettize the given text. Supports around 150 figlet fonts.</PackageDescription>
     <PackageVersion>1.0.0</PackageVersion>
     <PackageTags>figlet;ascii;commandline</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/tanathos/dotnet-figlet</RepositoryUrl>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>figlet</ToolCommandName>
